@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload and Download</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet">
+    <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+        }
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 50px auto;
+            text-align: center;
+            overflow-y: auto;
+            max-height: 80vh;
+        }
+        .upload-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+        }
+        .upload-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        .upload-card h2 {
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+        .btn-primary {
+            background-color: #4a90e2;
+            border-color: #4a90e2;
+        }
+        .btn-primary:hover {
+            background-color: #357ab8;
+            border-color: #2c6393;
+        }
+        .clipboard {
+            display: inline-block;
+            padding: 15px 30px;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #FDEB71 10%, #F8D800 100%);
+            color: #04048c;
+            font-size: 16px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .clipboard:hover {
+            background: linear-gradient(135deg, #F8D800 10%, #FDEB71 100%);
+            color: #fff;
+            transform: scale(1.05);
+        }
+        .clipboard:active {
+            transform: scale(0.95);
+        }
+        .img-fluid {
+            transition: transform 0.2s;
+        }
+        .img-fluid:hover {
+            transform: scale(1.1);
+        }
+        #progress-bar {
+            display: none;
+            width: 100%;
+            background-color: #ddd;
+            margin-top: 20px;
+        }
+        #progress-bar div {
+            width: 0%;
+            height: 30px;
+            background-color: #4a90e2;
+            text-align: center;
+            line-height: 30px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+    <div class="container">
+        <div class="upload-card">
+            <h2>Upload and Download Files</h2>
+            <img src="/media/image/download.svg" class="img-fluid" style="height: 150px; margin-bottom: 20px;">
+            <input type="file" class="my-pond" multiple name="filepond" />
+            <div class="mt-4">
+                <button class="btn btn-primary" onclick="upload_file()">Upload Files</button>
+            </div>
+            <div id="progress-bar">
+                <div id="progress-bar-fill">0%</div>
+            </div>
+            <div class="mt-4" id="btn" style="display: none;">
+                <a id="download-link" class="clipboard" href="#" target="_blank">Download Files</a>
+                <button class="btn btn-info clipboard" onclick="copyClip()">Copy Download Link</button>
+                <p class="mt-2">Link copied? Click to download!</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+    <script src="https://unpkg.com/filepond/dist/filepond.min.js"></script>
+    <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+    <script>
+        particlesJS("particles-js", {
+            "particles": {
+                "number": {
+                    "value": 80,
+                    "density": {
+                        "enable": true,
+                        "value_area": 800
+                    }
+                },
+                "color": {
+                    "value": "#ffffff"
+                },
+                "shape": {
+                    "type": "circle",
+                    "stroke": {
+                        "width": 0,
+                        "color": "#000000"
+                    },
+                    "polygon": {
+                        "nb_sides": 5
+                    }
+                },
+                "opacity": {
+                    "value": 0.5,
+                    "random": false
+                },
+                "size": {
+                    "value": 3,
+                    "random": true
+                },
+                "line_linked": {
+                    "enable": true,
+                    "distance": 150,
+                    "color": "#ffffff",
+                    "opacity": 0.4,
+                    "width": 1
+                },
+                "move": {
+                    "enable": true,
+                    "speed": 6,
+                    "direction": "none",
+                    "out_mode": "out"
+                }
+            },
+            "interactivity": {
+                "events": {
+                    "onhover": {
+                        "enable": true,
+                        "mode": "repulse"
+                    },
+                    "onclick": {
+                        "enable": true,
+                        "mode": "push"
+                    }
+                },
+                "modes": {
+                    "repulse": {
+                        "distance": 200,
+                        "duration": 0.4
+                    }
+                }
+            },
+            "retina_detect": true
+        });
+
+        FilePond.registerPlugin(FilePondPluginImagePreview);
+
+        const pond = FilePond.create(document.querySelector('.my-pond'));
+        pond.allowMultiple = true;
+
+        let downloadUrl = null;
+
+        function upload_file() {
+            const files = pond.getFiles();
+            const formdata = new FormData();
+            files.forEach(fileItem => {
+                formdata.append('files', fileItem.file);
+            });
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/handle/', true);
+            xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+            
+            xhr.upload.onprogress = function(e) {
+                const percentComplete = (e.loaded / e.total) * 100;
+                document.getElementById('progress-bar').style.display = 'block';
+                document.getElementById('progress-bar-fill').style.width = percentComplete + '%';
+                document.getElementById('progress-bar-fill').innerText = Math.round(percentComplete) + '%';
+            };
+
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    const result = JSON.parse(xhr.responseText);
+                    if (result.status === 200) {
+                        downloadUrl = `http://127.0.0.1:8000/media/downloads/${result.data.folder}.zip`;
+                        document.getElementById('download-link').href = downloadUrl;
+                        document.getElementById('btn').style.display = 'block';
+                    } else {
+                        alert(result.message);
+                    }
+                } else {
+                    alert('An error occurred while uploading the file.');
+                }
+            };
+
+            xhr.send(formdata);
+        }
+
+        function copyClip() {
+            if (downloadUrl) {
+                navigator.clipboard.writeText(downloadUrl).then(() => {
+                    alert(`Copied the download link: ${downloadUrl}`);
+                }).catch(err => {
+                    console.error('Failed to copy: ', err);
+                });
+            } else {
+                alert('Download URL not available');
+            }
+        }
+
+        document.getElementById('download-link').addEventListener('click', function(e) {
+            e.preventDefault();
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = true;
+            link.click();
+        });
+    </script>
+</body>
+</html>
