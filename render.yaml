@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: my-django-app
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python manage.py runserver 0.0.0.0:$PORT"
+    routes:
+      - type: path
+        path: /
